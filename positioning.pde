@@ -153,6 +153,7 @@ void chooseShapeRotation()
   rotations.add(225, 1);
   rotations.add(270, 1);
   rotations.add(315, 1);
+  rotations.add(round(random(360)), 2);
   shapeRotation = rotations.getRandom();
 }
 
@@ -184,6 +185,7 @@ void generateShapes()
       int x = (i * shapeSize) + (i * shapeSpacing);
       newShape = getShapeType(shapeType);
       newShape.translate(x, 0);
+      newShape.rotate(radians(shapeRotation * i), new RPoint(newShape.getX() + (shapeSize/2), shapeSize/2));
       theShape.addChild(newShape);
     }
   }
@@ -199,6 +201,7 @@ void generateShapes()
         int y = (j * shapeSize) + (j * shapeSpacing);
         newShape = getShapeType(shapeType);
         newShape.translate(x, y);
+        newShape.rotate(radians(shapeRotation * i), new RPoint(newShape.getX() + (shapeSize/2), newShape.getY() + (shapeSize/2)));
         theShape.addChild(newShape);
       }
     }
@@ -237,8 +240,14 @@ RShape getShapeType(int type)
   {
     returnShape = RShape.createRectangle(0, 0, shapeSize, shapeSize);
   }
-  else { // THIS SHOULD BE A TRIANGLE
-    returnShape = RShape.createCircle(0, 0, shapeSize);
+  else
+  {
+    float half = shapeSize/2;
+    returnShape = new RShape();
+    returnShape.addMoveTo(0, -half);
+    returnShape.addLineTo(half, half);
+    returnShape.addLineTo(-half, half);
+    returnShape.addLineTo(0, -half);
   }
 
   return returnShape;
