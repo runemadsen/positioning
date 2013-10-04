@@ -39,8 +39,14 @@ int RECTANGLE = 2;
 
 int shapeType;
 int shapeSize;
+int shapeSpacing;
+int shapeRotation;
 int numShapes;
 int positionType;
+
+// TODO
+// int shapeSpacingType = EASING, EQUAL, NONE
+// int shapeDisplacement = RANDOM, X, Y, 
 
 RShape theShape;
 
@@ -93,13 +99,15 @@ public void draw()
 public void createNew()
 {
   theShape = new RShape();
+  
   chooseNumShapes();
   chooseShapeSize();
   chooseShapeType();
+  chooseShapeSpacing();
+  chooseShapeRotation();
   choosePosition();
-  generateShapes();
 
-  // center in middle of scene
+  generateShapes();
 }
 
 /* Choose: Num Shapes
@@ -107,14 +115,11 @@ public void createNew()
 
 public void chooseNumShapes()
 {
-  float choose = random(1);
-
-  if(choose < 0.3f)
-    numShapes = 1;
-  else if(choose < 0.6f)
-    numShapes = round(random(2, 5));
-  else
-    numShapes = round(random(6, 20));
+  WeightedRandomSet<Integer> nums = new WeightedRandomSet<Integer>();
+  nums.add(1, 1);
+  nums.add(round(random(2, 5)), 1);
+  nums.add(round(random(6, 20)), 1);
+  numShapes = nums.getRandom();
 }
 
 /* Choose: Shape Size
@@ -141,6 +146,37 @@ public void chooseShapeType()
   shapeType = shapes.getRandom();
 }
 
+/* Choose: Shape Spacing
+--------------------------------------------------------- */
+
+public void chooseShapeSpacing()
+{
+  WeightedRandomSet<Integer> spacings = new WeightedRandomSet<Integer>();
+  spacings.add(0, 1);
+  spacings.add(round(shapeSize/2), 1);
+  spacings.add(shapeSize, 1);
+  spacings.add(round(random(500)), 1);
+  shapeSpacing = spacings.getRandom();
+}
+
+/* Choose: Shape Rotation
+--------------------------------------------------------- */
+
+public void chooseShapeRotation()
+{
+  WeightedRandomSet<Integer> rotations = new WeightedRandomSet<Integer>();
+  rotations.add(0, 8);
+  rotations.add(45, 1);
+  rotations.add(90, 1);
+  rotations.add(135, 1);
+  rotations.add(180, 4);
+  rotations.add(225, 1);
+  rotations.add(270, 1);
+  rotations.add(315, 1);
+  shapeRotation = rotations.getRandom();
+}
+
+
 /* Choose: Position
 --------------------------------------------------------- */
 
@@ -163,10 +199,11 @@ public void generateShapes()
   // horizontal
   if(positionType == HORIZONTAL)
   {
-    for(int x = 0; x < numShapes; x++)
+    for(int i = 0; i < numShapes; i++)
     {
+      int x = (i * shapeSize) + (i * shapeSpacing);
       newShape = getShapeType(shapeType);
-      newShape.translate(shapeSize * x, 0);
+      newShape.translate(x, 0);
       theShape.addChild(newShape);
     }
   }
@@ -174,12 +211,14 @@ public void generateShapes()
   // grid
   else if(positionType == GRID)
   {
-    for(int x = 0; x < numShapes; x++)
+    for(int i = 0; i < numShapes; i++)
     {
-      for(int y = 0; y < numShapes; y++)
+      for(int j = 0; j < numShapes; j++)
       {
+        int x = (i * shapeSize) + (i * shapeSpacing);
+        int y = (j * shapeSize) + (j * shapeSpacing);
         newShape = getShapeType(shapeType);
-        newShape.translate(shapeSize * x, shapeSize * y);
+        newShape.translate(x, y);
         theShape.addChild(newShape);
       }
     }
@@ -207,17 +246,22 @@ public void generateShapes()
 
 public RShape getShapeType(int type)
 {
+  RShape returnShape;
+
   if(type == ELLIPSE)
   {
-    return RShape.createCircle(0, 0, shapeSize);
+    returnShape = RShape.createCircle(0, 0, shapeSize);
+    returnShape.translate(shapeSize/2, shapeSize/2);
   }
   else if(type == RECTANGLE)
   {
-    return RShape.createRectangle(0, 0, shapeSize, shapeSize);
+    returnShape = RShape.createRectangle(0, 0, shapeSize, shapeSize);
   }
   else { // THIS SHOULD BE A TRIANGLE
-    return RShape.createCircle(0, 0, shapeSize);
+    returnShape = RShape.createCircle(0, 0, shapeSize);
   }
+
+  return returnShape;
 }
 
 /* Events
